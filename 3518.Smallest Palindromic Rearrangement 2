@@ -1,0 +1,149 @@
+class Solution {
+public:
+    long long CAP;
+
+    // C(n, r), capped at CAP
+    long long comb(int n, int r) {
+        if (r < 0 || r > n)
+            return 0;
+
+        r = min(r, n - r);
+
+        long long ans = 1;
+
+        for (int i = 1; i <= r; i++) {
+            long long numerator = n - r + i;
+
+            // Use __int128 so multiplication cannot overflow
+            __int128 val = (__int128)ans * numerator;
+
+            val /= i;
+
+            if (val >= CAP)
+                return CAP;
+
+            ans = (long long)val;
+        }
+
+        return ans;
+    }
+
+    long long countWays(const vector<int>& freq) {
+        int used = 0;
+        long long ways = 1;
+
+        // Multinomial:
+        // total! / (f1! * f2! * ... * f26!)
+        //
+        // = C(f1, f1)
+        // * C(f1+f2, f2)
+        // * C(f1+f2+f3, f3) ...
+
+        for (int f : freq) {
+            if (f == 0)
+                continue;
+
+            long long choose = comb(used + f, f);
+
+            __int128 val = (__int128)ways * choose;
+
+            if (val >= CAP)
+                return CAP;
+
+            ways = (long long)val;
+            used += f;
+        }
+
+        return ways;
+    }
+
+    string smallestPalindrome(string s, int k) {
+
+        // We never need counts greater than k
+        CAP = (long long)k + 1;
+
+        vector<int> freq(26, 0);
+
+        for (char c : s)
+            freq[c - 'a']++;
+
+        // --------------------------
+        // Find middle character
+        // --------------------------
+
+        char middle = '\0';
+
+        for (int i = 0; i < 26; i++) {
+            if (freq[i] % 2) {
+                middle = char('a' + i);
+                break;
+            }
+        }
+
+        // --------------------------
+        // Frequencies for first half
+        // --------------------------
+
+        vector<int> halfFreq(26);
+
+        int halfLength = 0;
+
+        for (int i = 0; i < 26; i++) {
+            halfFreq[i] = freq[i] / 2;
+            halfLength += halfFreq[i];
+        }
+
+        // Not enough permutations
+        if (countWays(halfFreq) < k)
+            return "";
+
+        // --------------------------
+        // Construct kth permutation
+        // --------------------------
+
+        string half;
+        half.reserve(halfLength);
+
+        for (int pos = 0; pos < halfLength; pos++) {
+
+            for (int c = 0; c < 26; c++) {
+
+                if (halfFreq[c] == 0)
+                    continue;
+
+                // Try character c
+                halfFreq[c]--;
+
+                long long ways = countWays(halfFreq);
+
+                if (ways >= k) {
+
+                    // kth permutation is inside
+                    // this group
+                    half.push_back(char('a' + c));
+
+                    // Don't restore because we chose it
+                    break;
+                }
+
+                // Skip this entire group
+                k -= ways;
+
+                // Restore because we didn't choose it
+                halfFreq[c]++;
+            }
+        }
+
+        // --------------------------
+        // Construct full palindrome
+        // --------------------------
+
+        string right = half;
+        reverse(right.begin(), right.end());
+
+        if (middle != '\0')
+            return half + string(1, middle) + right;
+
+        return half + right;
+    }
+};
