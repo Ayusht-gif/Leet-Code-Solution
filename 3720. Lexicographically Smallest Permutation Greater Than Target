@@ -1,0 +1,56 @@
+class Solution {
+public:
+    string lexGreaterPermutation(string s, string target) {
+        vector<int> cnt(26, 0);
+
+        for (char c : s) {
+            cnt[c - 'a']++;
+        }
+
+        string prefix = "";
+        int n = s.size();
+        int matched = 0;
+
+        // Match target prefix as much as possible
+        for (int i = 0; i < n; i++) {
+            int x = target[i] - 'a';
+
+            if (cnt[x] == 0)
+                break;
+
+            prefix += target[i];
+            cnt[x]--;
+            matched++;
+        }
+
+        // Backtrack from the rightmost matched position
+        for (int i = matched; i >= 0; i--) {
+
+            if (i < matched) {
+                cnt[target[i] - 'a']++;
+                prefix.pop_back();
+            }
+
+            int start = (i < n) ? target[i] - 'a' + 1 : 26;
+
+            // Find smallest available character greater than target[i]
+            for (int j = start; j < 26; j++) {
+                if (cnt[j] > 0) {
+                    string ans = prefix;
+                    ans += char('a' + j);
+
+                    cnt[j]--;
+
+                    // Add remaining characters in sorted order
+                    for (int k = 0; k < 26; k++) {
+                        ans += string(cnt[k], char('a' + k));
+                    }
+
+                    return ans;
+                }
+            }
+        }
+
+        return "";
+    }
+};
