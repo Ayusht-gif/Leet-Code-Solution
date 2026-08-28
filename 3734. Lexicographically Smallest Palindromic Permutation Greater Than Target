@@ -1,0 +1,100 @@
+class Solution {
+public:
+    string lexPalindromicPermutation(string s, string target) {
+        vector<int> cnt(26, 0);
+
+        for (char c : s) {
+            cnt[c - 'a']++;
+        }
+
+        int oddCount = 0;
+        char mid = 0;
+
+        for (int i = 0; i < 26; i++) {
+            if (cnt[i] % 2 == 1) {
+                oddCount++;
+                mid = char('a' + i);
+            }
+        }
+
+        if (oddCount > 1) return "";
+
+        // Frequency for the left half
+        vector<int> halfCnt(26);
+        for (int i = 0; i < 26; i++) {
+            halfCnt[i] = cnt[i] / 2;
+        }
+
+        int m = s.size() / 2;
+        string left = "";
+        vector<int> rem = halfCnt;
+
+        // Try to match target's left half
+        int i = 0;
+
+        while (i < m && rem[target[i] - 'a'] > 0) {
+            left += target[i];
+            rem[target[i] - 'a']--;
+            i++;
+        }
+
+        // If we matched the complete left half,
+        // first check the palindrome with this same left half.
+        if (i == m) {
+            string right = left;
+            reverse(right.begin(), right.end());
+
+            string palindrome = left;
+            if (mid != 0) palindrome += mid;
+            palindrome += right;
+
+            if (palindrome > target) {
+                return palindrome;
+            }
+        }
+
+        // Backtrack from the first unmatched position.
+        // At each position, try the smallest character greater than target[pos].
+        for (int pos = i; pos >= 0; pos--) {
+
+            if (pos < i) {
+                rem[left.back() - 'a']++;
+                left.pop_back();
+            }
+
+            if (pos == m) continue;
+
+            int targetChar = target[pos] - 'a';
+
+            for (int c = targetChar + 1; c < 26; c++) {
+                if (rem[c] > 0) {
+                    string candidate = left;
+                    candidate += char('a' + c);
+
+                    rem[c]--;
+
+                    // Fill remaining left-half positions
+                    // with the smallest available characters.
+                    for (int k = 0; k < 26; k++) {
+                        candidate.append(rem[k], char('a' + k));
+                    }
+
+                    string right = candidate;
+                    reverse(right.begin(), right.end());
+
+                    string palindrome = candidate;
+
+                    if (mid != 0) {
+                        palindrome += mid;
+                    }
+
+                    palindrome += right;
+
+                    return palindrome;
+                }
+            }
+        }
+
+        return "";
+    }
+};
