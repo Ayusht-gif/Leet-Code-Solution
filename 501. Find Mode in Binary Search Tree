@@ -1,0 +1,35 @@
+class Solution {
+public:
+    vector<int> findMode(TreeNode* root) {
+        map<int, int> mp;
+        vector<int> ans;
+
+        // Count every value
+        function<void(TreeNode*)> solve = [&](TreeNode* root) {
+            if (root == NULL)
+                return;
+
+            mp[root->val]++;
+
+            solve(root->left);
+            solve(root->right);
+        };
+
+        solve(root);
+
+        // Find maximum frequency
+        int maxi = 0;
+
+        for (auto x : mp) {
+            maxi = max(maxi, x.second);
+        }
+
+        // Store all values having maximum frequency
+        for (auto x : mp) {
+            if (x.second == maxi)
+                ans.push_back(x.first);
+        }
+
+        return ans;
+    }
+};
