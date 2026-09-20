@@ -1,0 +1,9 @@
+class Solution {
+public:
+    int reverseDegree(string s) {
+        int total = 0;
+        for(int i = 0; i < s.size(); i++)
+            total += (i + 1) * (26 - (s[i] - 'a'));  // multiply 1-indexed position with reversed alphabet value
+        return total;
+    }
+};
