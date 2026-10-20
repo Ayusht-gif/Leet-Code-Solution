@@ -1,0 +1,45 @@
+class Solution {
+public:
+    int sortableIntegers(vector<int>& nums) {
+        int n = nums.size();
+        vector<int> sorted = nums;
+        sort(sorted.begin(), sorted.end());
+
+        int ans = 0;
+
+        for (int k = 1; k <= n; k++) {
+            if (n % k != 0) continue;
+
+            bool valid = true;
+
+            for (int i = 0; i < n && valid; i += k) {
+                int descents = 0;
+
+                for (int j = 0; j < k; j++) {
+                    int cur = nums[i + j];
+                    int next = nums[i + (j + 1) % k];
+
+                    if (cur > next)
+                        descents++;
+                }
+
+                if (descents > 1)
+                    valid = false;
+
+                // Check that this block contains the correct sorted values.
+                vector<int> block(nums.begin() + i, nums.begin() + i + k);
+                vector<int> target(sorted.begin() + i, sorted.begin() + i + k);
+
+                sort(block.begin(), block.end());
+
+                if (block != target)
+                    valid = false;
+            }
+
+            if (valid) ans += k;
+        }
+
+        return ans;
+    }
+};
+
