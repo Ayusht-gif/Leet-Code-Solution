@@ -1,0 +1,38 @@
+#include <vector>
+#include <algorithm>
+#include <climits>
+using namespace std;
+
+class Solution {
+public:
+    int minOperations(vector<int>& nums) {
+        int n = nums.size();
+        int best = INT_MAX;
+
+        // Case A: rotation of ascending
+        int k = nums[0];
+        bool asc = true;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != (k + i) % n) { asc = false; break; }
+        }
+        if (asc) {
+            if (k == 0) best = 0;
+            else best = min(n - k, k + 2);
+        }
+
+        // Case B: rotation of descending
+        bool desc = true;
+        for (int i = 0; i < n; i++) {
+            if (nums[i] != ((k - i) % n + n) % n) { desc = false; break; }
+        }
+        if (desc) {
+            int b = find(nums.begin(), nums.end(), n - 1) - nums.begin();
+            int opt1 = b + 1;                    // rotate left to descending, then reverse
+            int r0 = nums[n - 1];                // first element after reversing
+            int opt2 = 1 + (n - r0) % n;         // reverse, then rotate left
+            best = min(best, min(opt1, opt2));
+        }
+
+        return best == INT_MAX ? -1 : best;
+    }
+};
